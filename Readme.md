@@ -16,3 +16,12 @@ This repository contains a simple implementation of a neural network from scratc
 ## Results
 - **Training Accuracy**: After training, you should observe that the model achieves approximately **75%** accuracy on the training data.
 - **Testing Accuracy**: Observed test accuracy is about **70%**.
+
+## How to Run the `neural_network.py` Module
+
+## How to Run
+```bash
+pip install -r requirements.txt
+
+```bash
+python neural_network.py
