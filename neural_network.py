@@ -12,13 +12,14 @@ def read_data():
     data = np.array(pd_data)
     m, n = data.shape
     np.random.shuffle(data)
-    test = data[0:1000].T
-    y_test, x_test = test[0], test[1:n]
+    holdout = data[0:1000].T
+    y_holdout, x_holdout = holdout[0], holdout[1:n]
 
-    data_train = data[1000:m].T
-    y_train, x_train = data_train[0], data_train[1:n]
-    return y_train, x_train, y_test, x_test
+    train = data[1000:m].T
+    y_train, x_train = train[0], train[1:n]
+    x_holdout, x_train = x_holdout / 255., x_train / 255.
     print("Data successfully read")
+    return y_train, x_train, y_holdout, x_holdout
 
 def init_params():
     w1 = np.random.rand(10, 784) - 0.5
@@ -41,9 +42,6 @@ def forward_prop(w1, b1, w2, b2, x):
     a1 = relu(z1)
 
     z2 = w2.dot(a1) + b2
-    print("got z2")
-    print(z2)
-    print(z2.shape)
     a2 = softmax(z2)
 
     return z1, a1, z2, a2
@@ -61,10 +59,12 @@ def back_prop(z1, a1, z2, a2, w2, x, y):
     one_hot_y = one_hot(y)
     dz2 = a2 - one_hot_y
     dw2 = 1 / m * dz2.dot(a1.T)
-    db2 = 1 / m * np.sum(dz2, axis=1).reshape(-1, 1)
+    db2 = 1 / m * np.sum(dz2)
+    # db2 = 1 / m * np.sum(dz2, axis=1).reshape(-1, 1)
     dz1 = w2.T.dot(dz2) * derivative_relu(z1)
     dw1 = 1 / m * dz1.dot(x.T)
-    db1 = 1 / m * np.sum(dz1, axis=1).reshape(-1, 1)
+    # db1 = 1 / m * np.sum(dz1, axis=1).reshape(-1, 1)
+    db1 = 1 / m * np.sum(dz1)
 
     return dw1, db1, dw2, db2
     
@@ -85,17 +85,41 @@ def get_accuracy(predictions, y):
 def gradient_descent(x, y, iterations, alpha):
     w1, b1, w2, b2 = init_params()
     for i in range(iterations):
-        print(i)
         z1, a1, z2, a2 = forward_prop(w1, b1, w2, b2, x)
         dw1, db1, dw2, db2 = back_prop(z1, a1, z2, a2, w2, x, y)
         w1, b1, w2, b2 = update_params(w1, b1, w2, b2, dw1, db1, dw2, db2, alpha)
         if (i % 10) == 0:
             print(f"Iteration: {i}")
             print(f"Accuracy: {get_accuracy(get_predictions(a2), y)}")
-        return w1, b1, w2, b2
-    
+    train_accuracy = get_accuracy(get_predictions(a2), y)
+    return w1, b1, w2, b2, train_accuracy
+
+def make_predictions(X, w1, b1, w2, b2):
+    _, _, _, a2 = forward_prop(w1, b1, w2, b2, X)
+    predictions = get_predictions(a2)
+    return predictions
+
+def test_prediction(index, w1, b1, w2, b2, x_train, y_train):
+    current_image = x_train[:, index, None]
+    prediction = make_predictions(x_train[:, index, None], w1, b1, w2, b2)
+    label = y_train[index]
+    print(f"Prediction: {prediction}\nLabel: {label}")
+
+    current_image = current_image.reshape((28, 28)) * 255
+    pyplot.gray()
+    pyplot.imshow(current_image, interpolation='nearest')
+    pyplot.show()
+
 def main():
     y_train, x_train, y_test, x_test = read_data()
-    w1, b1, w2, b2 = gradient_descent(x_train, y_train, 200, 0.1)
+    w1, b1, w2, b2, train_accuracy = gradient_descent(x_train, y_train, 300, 0.05)
+    print(f"Train accuracy: {train_accuracy}")
+
+    test_prediction(0, w1, b1, w2, b2, x_train, y_train)
+    test_prediction(1, w1, b1, w2, b2, x_train, y_train)
+    test_prediction(2, w1, b1, w2, b2, x_train, y_train)
+
+    predictions = make_predictions(x_test, w1, b1, w2, b2)
+    print(f"Test accuracy: {get_accuracy(predictions, y_test)} ")
 
 main()
