@@ -14,5 +14,5 @@ This repository contains a simple implementation of a neural network from scratc
 ---
 
 ## Results
-Training Accuracy: After training, you should observe that the model achieves approximately 75% accuracy on the training data.
-Testing Accuracy: Observed test accuracy is about 70%
+- **Training Accuracy**: After training, you should observe that the model achieves approximately **75%** accuracy on the training data.
+- **Testing Accuracy**: Observed test accuracy is about **70%**.
