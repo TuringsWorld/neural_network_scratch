@@ -1,6 +1,6 @@
 # Neural Network from Scratch - Python
 
-This repository contains a simple implementation of a neural network from scratch in Python using NumPy. The neural network is capable of performing binary or multiclass classification using the forward and backward propagation methods. Various functions are included for training, testing, and making predictions. Tested on the MNIST dataset.
+This repository contains a simple implementation of a neural network from scratch in Python using NumPy. The neural network is capable of performing binary or multiclass classification using forward and backpropagation methods. Various functions are included for training, testing, and making predictions. Tested on the MNIST dataset.
 
 ## Features
 
