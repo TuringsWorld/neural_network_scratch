@@ -1,4 +1,5 @@
-''' Neural Network From Scratch Exercise '''
+""" Neural Network From Scratch Exercise """
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot
@@ -6,11 +7,12 @@ from typing import Tuple
 
 m, n = None, None
 
+
 def read_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    '''Reads mnist dataset and splits between training and test'''
+    """Reads mnist dataset and splits between training and test"""
     global m
     global n
-    pd_data = pd.read_csv('./data/train.csv')
+    pd_data = pd.read_csv("./data/train.csv")
     data = np.array(pd_data)
     m, n = data.shape
     np.random.shuffle(data)
@@ -19,11 +21,13 @@ def read_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
     train = data[1000:m].T
     y_train, x_train = train[0], train[1:n]
-    x_holdout, x_train = x_holdout / 255., x_train / 255.
+    x_holdout, x_train = x_holdout / 255.0, x_train / 255.0
     print("Data successfully read")
     return y_train, x_train, y_holdout, x_holdout
 
+
 def init_params() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Initialize the weights and biases randomly"""
     w1 = np.random.rand(10, 784) - 0.5
     b1 = np.random.rand(10, 1) - 0.5
 
@@ -34,10 +38,15 @@ def init_params() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 
 def softmax(z: np.ndarray) -> np.ndarray:
-    with np.errstate(over='ignore'):
+    """Activation function between 0 and 1 to represent probabilities"""
+    with np.errstate(over="ignore"):
         return np.exp(z) / sum(np.exp(z))
 
-def forward_prop(w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray, x: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+
+def forward_prop(
+    w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray, x: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Linear algebra to do forward propagation in neural network"""
     relu = lambda z: np.maximum(0, z)
 
     z1 = w1.dot(x) + b1
@@ -48,14 +57,25 @@ def forward_prop(w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray,
 
     return z1, a1, z2, a2
 
-def one_hot(y: np.ndarray) ->  np.ndarray:
+
+def one_hot(y: np.ndarray) -> np.ndarray:
+    """Convert to one hot encoding"""
     one_hot_y = np.zeros((y.size, y.max() + 1))
     one_hot_y[np.arange(y.size), y] = 1
     one_hot_y = one_hot_y.T
     return one_hot_y
 
 
-def back_prop(z1: np.ndarray, a1: np.ndarray, a2: np.ndarray, w2: np.ndarray, x: np.ndarray, y: np.ndarray) -> Tuple[np.int64, np.int64, np.int64, np.int64]:
+def back_prop(
+    z1: np.ndarray,
+    a1: np.ndarray,
+    a2: np.ndarray,
+    w2: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray,
+) -> Tuple[np.int64, np.int64, np.int64, np.int64]:
+    """Computes the gradients of the loss function with respect to the
+    weights and biases which will be used to update parameters."""
     derivative_relu = lambda z: z > 0
 
     one_hot_y = one_hot(y)
@@ -69,25 +89,45 @@ def back_prop(z1: np.ndarray, a1: np.ndarray, a2: np.ndarray, w2: np.ndarray, x:
     db1 = 1 / m * np.sum(dz1)
 
     return dw1, db1, dw2, db2
-    
 
-def update_params(w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray, dw1: np.int64, db1: np.int64, dw2: np.int64, db2: np.int64, alpha: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+
+def update_params(
+    w1: np.ndarray,
+    b1: np.ndarray,
+    w2: np.ndarray,
+    b2: np.ndarray,
+    dw1: np.int64,
+    db1: np.int64,
+    dw2: np.int64,
+    db2: np.int64,
+    alpha: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Updates parameters of the network based on the computed gradients and existing parameters."""
     w1 = w1 - alpha * dw1
     b1 = b1 - alpha * db1
     w2 = w2 - alpha * dw2
     b2 = b2 - alpha * db2
     return w1, b1, w2, b2
 
+
 def get_predictions(a2: np.ndarray) -> np.ndarray:
+    """Extract the predicted class labels from the output of the neural network."""
     return np.argmax(a2, 0)
 
+
 def get_accuracy(predictions: np.ndarray, y: np.ndarray) -> np.float64:
+    """Calculate the accuracy of a set of predictions"""
     return np.sum(predictions == y) / y.size
 
-def gradient_descent(x: np.ndarray, y: np.ndarray, iterations: int, alpha: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.float64]:
+
+def gradient_descent(
+    x: np.ndarray, y: np.ndarray, iterations: int, alpha: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.float64]:
+    """Trains a neural network by iteratively updating the weights and biases
+    using gradient descent."""
     w1, b1, w2, b2 = init_params()
     for i in range(iterations):
-        z1, a1, z2, a2 = forward_prop(w1, b1, w2, b2, x)
+        z1, a1, _, a2 = forward_prop(w1, b1, w2, b2, x)
         dw1, db1, dw2, db2 = back_prop(z1, a1, a2, w2, x, y)
         w1, b1, w2, b2 = update_params(w1, b1, w2, b2, dw1, db1, dw2, db2, alpha)
         if (i % 10) == 0:
@@ -96,12 +136,29 @@ def gradient_descent(x: np.ndarray, y: np.ndarray, iterations: int, alpha: float
     train_accuracy = get_accuracy(get_predictions(a2), y)
     return w1, b1, w2, b2, train_accuracy
 
-def make_predictions(x: np.ndarray, w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray) -> np.ndarray:
+
+def make_predictions(
+    x: np.ndarray, w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray
+) -> np.ndarray:
+    """Uses the trained weights and biases of a neural network to make predictions
+    for the given input data."""
     _, _, _, a2 = forward_prop(w1, b1, w2, b2, x)
     predictions = get_predictions(a2)
     return predictions
 
-def test_prediction(index: int, w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray, x_train: np.ndarray, y_train: np.ndarray) -> None:
+
+def test_prediction(
+    index: int,
+    w1: np.ndarray,
+    b1: np.ndarray,
+    w2: np.ndarray,
+    b2: np.ndarray,
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+) -> None:
+    """Uses the trained neural network to make a prediction
+    for the corresponding input sample, and compares the prediction
+    to the true label."""
     current_image = x_train[:, index, None]
     prediction = make_predictions(x_train[:, index, None], w1, b1, w2, b2)
     label = y_train[index]
@@ -109,10 +166,12 @@ def test_prediction(index: int, w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, 
 
     current_image = current_image.reshape((28, 28)) * 255
     pyplot.gray()
-    pyplot.imshow(current_image, interpolation='nearest')
+    pyplot.imshow(current_image, interpolation="nearest")
     pyplot.show()
 
+
 def main():
+    """Main function that trains and tests the custom neural network."""
     y_train, x_train, y_test, x_test = read_data()
     w1, b1, w2, b2, train_accuracy = gradient_descent(x_train, y_train, 300, 0.05)
     print(f"Train accuracy: {train_accuracy}")
@@ -123,5 +182,6 @@ def main():
 
     predictions = make_predictions(x_test, w1, b1, w2, b2)
     print(f"Test accuracy: {get_accuracy(predictions, y_test)} ")
+
 
 main()
