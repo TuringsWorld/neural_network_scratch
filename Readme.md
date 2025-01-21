@@ -22,6 +22,8 @@ This repository contains a simple implementation of a neural network from scratc
 ## How to Run
 ```bash
 pip install -r requirements.txt
+```
 
 ```bash
 python neural_network.py
+```
